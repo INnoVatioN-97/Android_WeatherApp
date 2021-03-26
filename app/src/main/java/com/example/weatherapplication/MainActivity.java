@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -168,13 +167,13 @@ public class MainActivity extends AppCompatActivity {
 //        task = new ImageLoadTask(weatherImg);
 //        task.execute(url);
         tvCityName.setText(results[0].toString());
-        tvCityName.setGravity(Gravity.CENTER_VERTICAL);
         String str = "현재 온도 : " + results[1]
                 + "°C\n오늘 날씨는 " + weatherName
                 + "\n\n오늘 최고 기온 : " + results[2]
                 + "°C\n오늘 최저 기온 : " + results[3];
         //일교차
-        double tempDiff = (double) results[2] - (double) results[3];
+        double tempDiff = Double.parseDouble(String.format("%.1f", (double) results[2] - (double) results[3]));
+        //double per = Double.parseDouble(String.format("%.2f",per2));
         str += "\n\n오늘 일교차는 " + tempDiff + "";
         if (tempDiff >= 10 && tempDiff <= 20)
             str += "°C 로, 환절기 감기 조십하십셔!\n";

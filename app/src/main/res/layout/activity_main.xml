@@ -22,12 +22,12 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center_horizontal|center_vertical"
             android:text="@string/tv_cityname"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
             android:textSize="36sp"
             android:textStyle="bold"
+            android:gravity="center_horizontal|center_vertical"
             android:fontFamily="@font/d2coding_all" />
 
         <ImageView
@@ -46,8 +46,8 @@
             android:background="#4D000000"
             android:fontFamily="@font/d2coding_all"
             android:text="@string/tv_weather"
-            android:textAlignment="textStart"
             android:textColor="#FFFFFFFF"
+            android:gravity="center_vertical"
             android:textSize="18sp" />
     </LinearLayout>
 
