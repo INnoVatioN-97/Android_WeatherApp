@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,12 +20,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity {
     private GpsTracker gpsTracker = null;
     private Button checkWeatherBtn;
     private ImageView weatherImg;
     private TextView weatherMsg;
     private double latitude, longitude;
+    private LinearLayout mainLayout;
     Weather weatherTask;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 1997;
@@ -35,16 +40,15 @@ public class MainActivity extends AppCompatActivity {
     public void getLocation() {
         latitude = gpsTracker.getLatitude();
         longitude = gpsTracker.getLongitude();
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        gpsTracker = new GpsTracker(MainActivity.this);
-        if (gpsTracker != null) getLocation();
 
-
+        //먼저 권한 확인
         if (checkLocationServicesStatus()) {
             checkRunTimePermission();
         } else {
@@ -54,35 +58,47 @@ public class MainActivity extends AppCompatActivity {
         checkWeatherBtn = findViewById(R.id.btnRefresh);
         weatherImg = findViewById(R.id.weatherImg);
         weatherMsg = findViewById(R.id.weatherMsg);
+        mainLayout = findViewById(R.id.mainLayout); //activity_main
 
+        gpsTracker = new GpsTracker(MainActivity.this);
+        if (gpsTracker != null) getLocation();
         weatherTask = new Weather(this, latitude, longitude);
+        getWeather();
+
 
         checkWeatherBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 weatherTask.setLocation(latitude, longitude);
-                getLocation();
                 getWeather();
             }
         });
-        getWeather();
     }
 
     public void getWeather() {
+        getLocation();
         try {
-            Thread th = new Thread(weatherTask);
-            th.start();
-            String[] results = new String[weatherTask.results.length];
+            String result = weatherTask.execute().get();
+            String[] keywords = {"name", "temp", "temp_max", "temp_min", "main", "id"};
+            Object[] results;
 
-            for (int i = 0; i < weatherTask.results.length; i++) {
-                results[i] = weatherTask.getResult(i);
-                Log.d("GYI", results[i]);
+            JSONObject jsonObject = new JSONObject(result);
+            JSONObject jsonObject_Temp = (JSONObject) jsonObject.get("main");
+            JSONArray jsonObject_Weather = (JSONArray) jsonObject.get("weather");
+            JSONObject weatherJSONObject = (JSONObject) jsonObject_Weather.get(0);
+
+            results = new Object[keywords.length];
+
+            for (int i = 0; i < keywords.length; i++) {
+                if (i == 0) results[i] = jsonObject.getString(keywords[i]);
+                if (i > 0 && i < 4) results[i] = jsonObject_Temp.getDouble(keywords[i]);
+                if (i >= 4) results[i] = weatherJSONObject.getString(keywords[i]);
             }
-            msgCreator(Integer.parseInt(results[5]), results);
+
+            msgCreator(Integer.parseInt(results[5].toString()), results);
         } catch (Exception e) {
             e.printStackTrace();
             Log.d("GYI", "메인에서 받기 오류");
-            getWeather();
         }
     }
 
@@ -90,22 +106,25 @@ public class MainActivity extends AppCompatActivity {
      * 날씨 상황에 맞게 ImageView를 Vector 이미지로 바꿔준다.
      * 비상업적이나 혹시몰라 gitignore에 추가해뒀습니다.
      */
-    public void msgCreator(int code, String[] results) {
+    public void msgCreator(int code, Object[] results) {
         String weatherName = "";
         if (code == 800) {
             weatherName = "티없이 맑네요.";
             weatherImg.setImageResource(R.drawable.sun);
+            mainLayout.setBackgroundResource(R.drawable.sunny_gradient);
         } else if ((code / 10) >= 95 && (code / 100) <= 96) {
             switch (code / 10) {
                 case 95:
                     weatherName = "좋네요 대충.";
 //                    url += "50d.png";
                     weatherImg.setImageResource(R.drawable.atmosphere);
+                    mainLayout.setBackgroundResource(R.drawable.sunny_gradient);
                     break;
 
                 case 96:
                     weatherName = "와 날씨가 미침요... 집에 꼭 박혀있으세요.";
                     weatherImg.setImageResource(R.drawable.death);
+                    mainLayout.setBackgroundResource(R.drawable.dark_gradient);
                     break;
 
             }
@@ -114,32 +133,39 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     weatherName = "천둥 번개가 치네요.";
                     weatherImg.setImageResource(R.drawable.thunderstorm);
+                    mainLayout.setBackgroundResource(R.drawable.storm_gradient);
                     break;
 
                 case 3:
                     weatherName = "얕은 비가 오네요.";
                     weatherImg.setImageResource(R.drawable.rain);
+                    mainLayout.setBackgroundResource(R.drawable.rainy_gradient);
                     break;
 
 
                 case 5:
                     weatherName = "비가 오네요.";
                     weatherImg.setImageResource(R.drawable.rain);
+                    mainLayout.setBackgroundResource(R.drawable.rainy_gradient);
                     break;
 
                 case 6:
                     weatherName = "눈이 오네요.";
                     weatherImg.setImageResource(R.drawable.snow);
+                    mainLayout.setBackgroundResource(R.drawable.snowy_gradient);
                     break;
 
                 case 7:
                     weatherName = "그냥저냥 그런 날씨네요.";
                     weatherImg.setImageResource(R.drawable.atmosphere);
+                    mainLayout.setBackgroundResource(R.drawable.cloudy_gradient);
                     break;
 
                 case 8:
                     weatherName = "구름이 꼈네요.";
                     weatherImg.setImageResource(R.drawable.cloud);
+                    mainLayout.setBackgroundResource(R.drawable.cloudy_gradient);
+
                     break;
 
                 case 9:

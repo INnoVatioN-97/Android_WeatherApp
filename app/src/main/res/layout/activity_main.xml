@@ -2,10 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="#332F2F"
+    android:orientation="vertical"
+    tools:context=".MainActivity"
+    android:id="@+id/mainLayout">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,8 +28,10 @@
             android:layout_height="20dp"
             android:layout_marginBottom="40dp"
             android:layout_weight="3"
+            android:background="#4D000000"
             android:text="버튼을 눌러 오늘 우리 동네의 날씨를 확인해보세요."
             android:textAlignment="textStart"
+            android:textColor="#FFFFFFFF"
             android:textSize="18sp" />
     </LinearLayout>
 
