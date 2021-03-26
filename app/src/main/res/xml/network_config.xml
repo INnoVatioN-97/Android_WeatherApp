@@ -4,3 +4,4 @@
         <domain includeSubdomains="true">api.openweathermap.org</domain>
     </domain-config>
 </network-security-config>
+

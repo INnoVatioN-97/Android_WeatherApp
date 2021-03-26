@@ -25,15 +25,17 @@ public class MainActivity extends AppCompatActivity {
     private ImageView weatherImg;
     private TextView weatherMsg;
     private double latitude, longitude;
+    Weather weatherTask;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 1997;
     private static final int PERMISSIONS_REQUEST_CODE = 603;
+
     String[] REQUIRED_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET};
 
     public void getLocation() {
         latitude = gpsTracker.getLatitude();
         longitude = gpsTracker.getLongitude();
-        Toast.makeText(MainActivity.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
+//        Toast.makeText(MainActivity.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -50,22 +52,130 @@ public class MainActivity extends AppCompatActivity {
             showDialogForLocationServiceSetting();
         }
 
-        checkWeatherBtn = (Button) findViewById(R.id.btnRefresh);
+        checkWeatherBtn = findViewById(R.id.btnRefresh);
         weatherImg = findViewById(R.id.weatherImg);
         weatherMsg = findViewById(R.id.weatherMsg);
+
+        weatherTask = new Weather(this, latitude, longitude);
 
         checkWeatherBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                weatherTask.setLocation(latitude, longitude);
                 getLocation();
+                getWeather();
+//                weatherMsg.setText(getWeather());
+//                String s = getWeather();
+//                Toast.makeText(MainActivity.this, getWeather(), Toast.LENGTH_SHORT).show();
             }
         });
+        getWeather();
     }
 
+    public void getWeather() {
+        String str = "";
+        //"name", "temp", "temp_max", "temp_min", "main"
+        try {
+            Thread th = new Thread(weatherTask);
+            th.start();
+            String[] results = new String[weatherTask.results.length];
 
-    /*
-     * ActivityCompat.requestPermissions를 사용한 퍼미션 요청의 결과를 리턴받는 메소드입니다.
-     */
+//            while(results[4] != null) {
+            for (int i = 0; i < weatherTask.results.length; i++) {
+                results[i] = weatherTask.getResult(i);
+                Log.d("GYI", results[i]);
+            }
+//                 getResult()로 String[] 반환받아 거기서 조지기.
+//                if(results[0]!= null) {
+//                    weatherMsg.setText("완료");
+//                    break;
+//                }
+//            }
+//            weatherMsg.setText("내 도시 : " + results[0]
+//                                +"\n현재 온도 : " + results[1]
+//            +"°C\n 오늘 최고 기온 : "+ results[2]
+//            +"°C\n 오늘 최저 기온 : "+ results[3]
+//            +"°C\n 날씨 : " + results[4]
+//            +"\n 날씨 코드 : " + results[5]);
+            msgCreator(Integer.parseInt(results[5]), results);
+//            else Toast.makeText(this, "weatherTask.receiveMsg="+weatherTask.receiveMsg, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d("GYI", "메인에서 받기 오류");
+            getWeather();
+        }
+//        return str;
+    }
+
+    public void msgCreator(int code, String[] results) {
+        String weatherName = "";
+        ImageLoadTask task;
+        //url 의 img/w/ 뒤에 11d.png 등의 파일명이 붙는다.
+        String url = "https://openweathermap.org/img/w/";
+        if (code == 800) {
+            weatherName = "티없이 맑네요.";
+        } else if ((code / 10) >= 95 && (code / 100) <= 96) {
+            switch (code / 10) {
+                case 95:
+                    weatherName = "좋네요 대충.";
+                    url += "50d.png";
+                    break;
+
+                case 96:
+                    weatherName = "와 날씨가 미침요... 집에 꼭 박혀있으세요.";
+                    url += "50d.png";
+                    break;
+
+            }
+        } else {
+            switch (code / 100) {
+                case 2:
+                    weatherName = "천둥 번개가 치네요.";
+                    url += "11d.png";
+                    break;
+
+                case 3:
+                    weatherName = "얕은 비가 오네요.";
+                    url += "09d.png";
+                    break;
+
+
+                case 5:
+                    weatherName = "비가 오네요.";
+                    url += "10d.png";
+                    break;
+
+                case 6:
+                    weatherName = "눈이 오네요.";
+                    url += "13d.png";
+                    break;
+
+                case 7:
+                    weatherName = "그냥저냥 그런 날씨네요.";
+                    url += "50d.png";
+                    break;
+
+                case 8:
+                    weatherName = "구름이 꼈네요.";
+                    url += "03d.png";
+                    break;
+
+                case 9:
+                    weatherName = "날씨고 뭐고 집에 나가지 마세요";
+                    url += "50d.png";
+                    break;
+            }
+        }
+        Log.d("GYI", "url = " + url);
+        task = new ImageLoadTask(weatherImg);
+        task.execute(url);
+        weatherMsg.setText("내 도시 : " + results[0]
+                + "\n현재 온도 : " + results[1]
+                + "°C\n 오늘 날씨는 " + weatherName
+                + "\n 오늘 최고 기온 : " + results[2]
+                + "°C\n 오늘 최저 기온 : " + results[3]
+                + "\n");
+    }
     @Override
     public void onRequestPermissionsResult(int permsRequestCode,
                                            @NonNull String[] permissions,
