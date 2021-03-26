@@ -53,7 +53,6 @@ public class GpsTracker extends Service implements LocationListener {
                 if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
                         hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
                         hasInternetPermission == PackageManager.PERMISSION_GRANTED) {
-//                    Toast.makeText(mContext, "권한 승인.", Toast.LENGTH_LONG);
                 } else
                     return null;
 
@@ -111,6 +110,7 @@ public class GpsTracker extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        getLatitude();
     }
 
     @Override

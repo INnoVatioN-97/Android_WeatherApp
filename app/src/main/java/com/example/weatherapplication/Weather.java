@@ -36,7 +36,6 @@ public class Weather implements Runnable {
 
     public void setWeatherUrl() {
         weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + APIKEY + "&units=metric";
-//        Toast.makeText(mContext, "URL : " + weatherUrl, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -57,12 +56,6 @@ public class Weather implements Runnable {
             while ((str = reader.readLine()) != null) {
                 buffer.append(str);
             }
-//            "weather":[
-//                    {"id":804,
-//                     "main":"Clouds",
-//                     "description":"overcast clouds",
-//                     "icon":"04d"}
-//                      ]
             JSONObject jsonObject = new JSONObject(buffer.toString());
             JSONObject jsonObject_Temp = (JSONObject) jsonObject.get("main");
             JSONArray jsonObject_Weather = (JSONArray) jsonObject.get("weather");
@@ -70,17 +63,11 @@ public class Weather implements Runnable {
 
             results = new Object[keywords.length];
             Thread.sleep(50);
-//            results[0] = jsonObject.getString("name");
-//            results[1] = jsonObject_Temp.getDouble("temp");
-//            results[2] = jsonObject_Temp.getDouble("temp_max");
-//            results[3] = jsonObject_Temp.getDouble("temp_min");
-//            results[4] = weatherJSONObject.getString("main");
 
             for (int i = 0; i < keywords.length; i++) {
                 if (i == 0) results[i] = jsonObject.getString(keywords[i]);
                 if (i > 0 && i < 4) results[i] = jsonObject_Temp.getDouble(keywords[i]);
                 if (i >= 4) results[i] = weatherJSONObject.getString(keywords[i]);
-//                Log.d("GYI","씨잉 굳"+results[i]);
             }
 
 

@@ -35,6 +35,7 @@ public class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
         return bmp;
     }
 
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
