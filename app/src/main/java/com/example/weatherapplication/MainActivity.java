@@ -7,8 +7,8 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Gravity;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,9 +25,8 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     private GpsTracker gpsTracker = null;
-    private Button checkWeatherBtn;
-    private ImageView weatherImg;
-    private TextView weatherMsg;
+    private ImageView ivWeather;
+    private TextView tvWeather, tvCityName;
     private double latitude, longitude;
     private LinearLayout mainLayout;
     Weather weatherTask;
@@ -40,12 +39,12 @@ public class MainActivity extends AppCompatActivity {
     public void getLocation() {
         latitude = gpsTracker.getLatitude();
         longitude = gpsTracker.getLongitude();
-
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
         //먼저 권한 확인
@@ -55,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
             showDialogForLocationServiceSetting();
         }
 
-        checkWeatherBtn = findViewById(R.id.btnRefresh);
-        weatherImg = findViewById(R.id.weatherImg);
-        weatherMsg = findViewById(R.id.weatherMsg);
+        ivWeather = findViewById(R.id.ivWeather);
+        tvWeather = findViewById(R.id.tvWeather);
+        tvCityName = findViewById(R.id.tvCityName);
         mainLayout = findViewById(R.id.mainLayout); //activity_main
 
         gpsTracker = new GpsTracker(MainActivity.this);
@@ -65,14 +64,6 @@ public class MainActivity extends AppCompatActivity {
         weatherTask = new Weather(this, latitude, longitude);
         getWeather();
 
-
-        checkWeatherBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                weatherTask.setLocation(latitude, longitude);
-                getWeather();
-            }
-        });
     }
 
     public void getWeather() {
@@ -110,20 +101,20 @@ public class MainActivity extends AppCompatActivity {
         String weatherName = "";
         if (code == 800) {
             weatherName = "티없이 맑네요.";
-            weatherImg.setImageResource(R.drawable.sun);
+            ivWeather.setImageResource(R.drawable.sun);
             mainLayout.setBackgroundResource(R.drawable.sunny_gradient);
         } else if ((code / 10) >= 95 && (code / 100) <= 96) {
             switch (code / 10) {
                 case 95:
                     weatherName = "좋네요 대충.";
 //                    url += "50d.png";
-                    weatherImg.setImageResource(R.drawable.atmosphere);
+                    ivWeather.setImageResource(R.drawable.atmosphere);
                     mainLayout.setBackgroundResource(R.drawable.sunny_gradient);
                     break;
 
                 case 96:
                     weatherName = "와 날씨가 미침요... 집에 꼭 박혀있으세요.";
-                    weatherImg.setImageResource(R.drawable.death);
+                    ivWeather.setImageResource(R.drawable.death);
                     mainLayout.setBackgroundResource(R.drawable.dark_gradient);
                     break;
 
@@ -132,56 +123,76 @@ public class MainActivity extends AppCompatActivity {
             switch (code / 100) {
                 case 2:
                     weatherName = "천둥 번개가 치네요.";
-                    weatherImg.setImageResource(R.drawable.thunderstorm);
+                    ivWeather.setImageResource(R.drawable.thunderstorm);
                     mainLayout.setBackgroundResource(R.drawable.storm_gradient);
                     break;
 
                 case 3:
                     weatherName = "얕은 비가 오네요.";
-                    weatherImg.setImageResource(R.drawable.rain);
+                    ivWeather.setImageResource(R.drawable.rain);
                     mainLayout.setBackgroundResource(R.drawable.rainy_gradient);
                     break;
 
 
                 case 5:
                     weatherName = "비가 오네요.";
-                    weatherImg.setImageResource(R.drawable.rain);
+                    ivWeather.setImageResource(R.drawable.rain);
                     mainLayout.setBackgroundResource(R.drawable.rainy_gradient);
                     break;
 
                 case 6:
                     weatherName = "눈이 오네요.";
-                    weatherImg.setImageResource(R.drawable.snow);
+                    ivWeather.setImageResource(R.drawable.snow);
                     mainLayout.setBackgroundResource(R.drawable.snowy_gradient);
                     break;
 
                 case 7:
                     weatherName = "그냥저냥 그런 날씨네요.";
-                    weatherImg.setImageResource(R.drawable.atmosphere);
+                    ivWeather.setImageResource(R.drawable.atmosphere);
                     mainLayout.setBackgroundResource(R.drawable.cloudy_gradient);
                     break;
 
                 case 8:
                     weatherName = "구름이 꼈네요.";
-                    weatherImg.setImageResource(R.drawable.cloud);
+                    ivWeather.setImageResource(R.drawable.cloud);
                     mainLayout.setBackgroundResource(R.drawable.cloudy_gradient);
 
                     break;
 
                 case 9:
                     weatherName = "날씨고 뭐고 집에 나가지 마세요";
-                    weatherImg.setImageResource(R.drawable.death);
+                    ivWeather.setImageResource(R.drawable.death);
                     break;
             }
         }
 //        task = new ImageLoadTask(weatherImg);
 //        task.execute(url);
-        weatherMsg.setText("내 도시 : " + results[0]
-                + "\n현재 온도 : " + results[1]
-                + "°C\n 오늘 날씨는 " + weatherName
-                + "\n 오늘 최고 기온 : " + results[2]
-                + "°C\n 오늘 최저 기온 : " + results[3]
-                + "\n");
+        tvCityName.setText(results[0].toString());
+        tvCityName.setGravity(Gravity.CENTER_VERTICAL);
+        String str = "현재 온도 : " + results[1]
+                + "°C\n오늘 날씨는 " + weatherName
+                + "\n\n오늘 최고 기온 : " + results[2]
+                + "°C\n오늘 최저 기온 : " + results[3];
+        //일교차
+        double tempDiff = (double) results[2] - (double) results[3];
+        str += "\n\n오늘 일교차는 " + tempDiff + "";
+        if (tempDiff >= 10 && tempDiff <= 20)
+            str += "°C 로, 환절기 감기 조십하십셔!\n";
+
+        else if (tempDiff > 20)
+            str += "°C 로, 지구가 망하려나 봅니다.\n";
+        else str += "°C 입니다.";
+
+        //현재온도
+        if ((double) results[1] >= 37) {
+            str += "날씨 최소 대프리카;;";
+        } else if ((double) results[1] <= 5 && (double) results[1] >= -5)
+            str += "날이 추우니 조심하십셔";
+        else if ((double) results[1] < -5)
+            str += "이 나라는 지금 오지게 춥습니다.";
+
+
+        tvWeather.setText(str);
     }
     @Override
     public void onRequestPermissionsResult(int permsRequestCode,

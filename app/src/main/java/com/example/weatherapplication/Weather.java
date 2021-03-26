@@ -11,14 +11,10 @@ import java.net.URL;
 
 
 public class Weather extends AsyncTask<String, Void, String> {
-    Context mContext;
+    private Context mContext;
     private double lat, lon;
-    String APIKEY;
-    String weatherUrl;
-
-//    String[] keywords = {"name", "temp", "temp_max", "temp_min", "main", "id"};
-//    Object[] results = new Object[keywords.length];
-
+    private String APIKEY;
+    private String weatherUrl;
 
     public Weather(Context mContext, double lat, double lon) {
         this.mContext = mContext;
@@ -54,18 +50,7 @@ public class Weather extends AsyncTask<String, Void, String> {
                 while ((str = reader.readLine()) != null) {
                     buffer.append(str);
                 }
-//                JSONObject jsonObject = new JSONObject(buffer.toString());
-//                JSONObject jsonObject_Temp = (JSONObject) jsonObject.get("main");
-//                JSONArray jsonObject_Weather = (JSONArray) jsonObject.get("weather");
-//                JSONObject weatherJSONObject = (JSONObject) jsonObject_Weather.get(0);
-//
-//                results = new Object[keywords.length];
-//
-//                for (int i = 0; i < keywords.length; i++) {
-//                    if (i == 0) results[i] = jsonObject.getString(keywords[i]);
-//                    if (i > 0 && i < 4) results[i] = jsonObject_Temp.getDouble(keywords[i]);
-//                    if (i >= 4) results[i] = weatherJSONObject.getString(keywords[i]);
-//                }
+
                 str = buffer.toString();
                 reader.close();
             } else {
@@ -77,8 +62,4 @@ public class Weather extends AsyncTask<String, Void, String> {
         }
         return str;
     }
-
-//    public String getResult(int i) {
-//        return results[i].toString();
-//    }
 }

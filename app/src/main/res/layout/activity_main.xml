@@ -2,51 +2,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#332F2F"
     android:orientation="vertical"
-    tools:context=".MainActivity"
-    android:id="@+id/mainLayout">
+    android:weightSum="10"
+    tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:orientation="vertical"
+        android:weightSum="10">
+
+        <TextView
+            android:id="@+id/tvCityName"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/tv_cityname"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/d2coding_all" />
 
         <ImageView
-            android:id="@+id/weatherImg"
+            android:id="@+id/ivWeather"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="5"
+            android:scaleType="centerCrop"
             app:srcCompat="@drawable/ic_launcher_foreground" />
 
         <TextView
-            android:id="@+id/weatherMsg"
+            android:id="@+id/tvWeather"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_marginBottom="40dp"
-            android:layout_weight="3"
+            android:layout_height="0dp"
+            android:layout_weight="4"
             android:background="#4D000000"
-            android:text="버튼을 눌러 오늘 우리 동네의 날씨를 확인해보세요."
+            android:fontFamily="@font/d2coding_all"
+            android:text="@string/tv_weather"
             android:textAlignment="textStart"
             android:textColor="#FFFFFFFF"
             android:textSize="18sp" />
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="10">
-
-        <Button
-            android:id="@+id/btnRefresh"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:text="Click to Check your Weather"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
