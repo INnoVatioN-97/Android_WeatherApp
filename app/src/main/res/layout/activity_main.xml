@@ -10,45 +10,92 @@
     android:weightSum="10"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ConstraintLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="10"
-        android:orientation="vertical"
         android:weightSum="10">
 
         <TextView
             android:id="@+id/tvCityName"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:fontFamily="@font/d2coding_all"
+            android:gravity="center_horizontal|center_vertical"
             android:text="@string/tv_cityname"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
             android:textSize="36sp"
             android:textStyle="bold"
-            android:gravity="center_horizontal|center_vertical"
-            android:fontFamily="@font/d2coding_all" />
+            app:layout_constraintBottom_toTopOf="@+id/ivWeather"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_weight="1" />
 
         <ImageView
             android:id="@+id/ivWeather"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="5"
             android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/tvCovidInfo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCityName"
+            app:layout_constraintVertical_weight="5"
             app:srcCompat="@drawable/ic_launcher_foreground" />
 
         <TextView
-            android:id="@+id/tvWeather"
-            android:layout_width="match_parent"
+            android:id="@+id/tvCovidInfo"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="4"
+            android:autoSizeMaxTextSize="100sp"
+            android:autoSizeMinTextSize="5sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
             android:background="#4D000000"
             android:fontFamily="@font/d2coding_all"
-            android:text="@string/tv_weather"
+            android:gravity="left|center_vertical"
+            android:paddingLeft="10dp"
+            android:paddingTop="30dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="30dp"
+            android:text="@string/tv_covidinfo"
             android:textColor="#FFFFFFFF"
-            android:gravity="center_vertical"
-            android:textSize="18sp" />
-    </LinearLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivWeather"
+            app:layout_constraintVertical_weight="4" />
+
+        <TextView
+            android:id="@+id/tvMin_MaxTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:autoSizeMaxTextSize="100sp"
+            android:autoSizeMinTextSize="17sp"
+            android:autoSizeStepGranularity="2sp"
+            android:autoSizeTextType="uniform"
+            android:text="TextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvWeather" />
+
+        <TextView
+            android:id="@+id/tvWeather"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:autoSizeMaxTextSize="100sp"
+            android:autoSizeMinTextSize="24sp"
+            android:autoSizeStepGranularity="2sp"
+            android:autoSizeTextType="uniform"
+            android:text="@string/tv_weather"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCityName" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

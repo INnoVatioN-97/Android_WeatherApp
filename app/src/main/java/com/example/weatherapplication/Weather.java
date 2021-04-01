@@ -20,25 +20,32 @@ public class Weather extends AsyncTask<String, Void, String> {
         this.mContext = mContext;
         APIKEY = mContext.getResources().getString(R.string.API_KEY);
         setLocation(lat, lon);
-        setWeatherUrl();
+    }
+
+    public Weather(Context mContext) {
+        this.mContext = mContext;
+        APIKEY = mContext.getResources().getString(R.string.API_KEY);
+        lat = lon = 0.0;
     }
 
     public void setLocation(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
+        setWeatherUrl(lat, lon);
     }
 
-    public void setWeatherUrl() {
+    public void setWeatherUrl(double lat, double lon) {
         weatherUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + APIKEY + "&units=metric";
     }
 
 
     @Override
     public String doInBackground(String... urls) {
+
         URL url;
         String str = null;
         try {
-            setWeatherUrl();
+            setWeatherUrl(lat, lon);
             url = new URL(weatherUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");

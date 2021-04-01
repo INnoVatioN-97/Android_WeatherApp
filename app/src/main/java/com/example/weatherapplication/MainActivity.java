@@ -24,10 +24,12 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     private GpsTracker gpsTracker = null;
+    private CovidInfo covidInfo = null;
     private ImageView ivWeather;
-    private TextView tvWeather, tvCityName;
+    private TextView tvWeather, tvCityName, tvMin_MaxTemp, tvCovidInfo;
     private double latitude, longitude;
     private LinearLayout mainLayout;
+    private Item item; //내 위치의 코로나 정보가 담김.
     Weather weatherTask;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 1997;
@@ -38,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     public void getLocation() {
         latitude = gpsTracker.getLatitude();
         longitude = gpsTracker.getLongitude();
+        weatherTask.setLocation(latitude, longitude);
+        covidInfo.setLocation(latitude, longitude);
     }
 
     @Override
@@ -54,18 +58,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ivWeather = findViewById(R.id.ivWeather);
-        tvWeather = findViewById(R.id.tvWeather);
+        tvWeather = findViewById(R.id.tvCovidInfo);
         tvCityName = findViewById(R.id.tvCityName);
+        tvCovidInfo = findViewById(R.id.tvCovidInfo);
+        tvMin_MaxTemp = findViewById(R.id.tvMin_MaxTemp);
+
         mainLayout = findViewById(R.id.mainLayout); //activity_main
+        longitude = latitude = 0.0; //초기 값
 
+        weatherTask = new Weather(this);
+        covidInfo = new CovidInfo(this);
         gpsTracker = new GpsTracker(MainActivity.this);
-        if (gpsTracker != null) getLocation();
-        weatherTask = new Weather(this, latitude, longitude);
-        getWeather();
 
+        if (gpsTracker != null) getLocation();
+        item = covidInfo.getCovidInfo();
+        getWeather();
+//        Log.d("GYI", String.valueOf(str));
     }
 
     public void getWeather() {
+//        Log.d("GYI", item.toString());
         getLocation();
         try {
             String result = weatherTask.execute().get();
@@ -164,34 +176,30 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
-//        task = new ImageLoadTask(weatherImg);
-//        task.execute(url);
         tvCityName.setText(results[0].toString());
-        String str = "현재 온도 : " + results[1]
-                + "°C\n오늘 날씨는 " + weatherName
-                + "\n\n오늘 최고 기온 : " + results[2]
+        // String str_Weather : 날씨
+        // String str_Temp : 온도정보들
+        // String str_Covid : 야로나 관련 정보
+        String strTemp = "";
+        String strWeather = "";
+        String strCovid = "";
+        strTemp = "현재 온도 : " + results[1]
+                + "°C\n\n오늘 최고 기온 : " + results[2]
                 + "°C\n오늘 최저 기온 : " + results[3];
         //일교차
         double tempDiff = Double.parseDouble(String.format("%.1f", (double) results[2] - (double) results[3]));
         //double per = Double.parseDouble(String.format("%.2f",per2));
-        str += "\n\n오늘 일교차는 " + tempDiff + "";
-        if (tempDiff >= 10 && tempDiff <= 20)
-            str += "°C 로, 환절기 감기 조십하십셔!\n";
+        strTemp += "\n\n오늘 일교차 : " + tempDiff + "°C";
 
-        else if (tempDiff > 20)
-            str += "°C 로, 지구가 망하려나 봅니다.\n";
-        else str += "°C 입니다.";
+        strCovid += "" + item.getGubun() + " 지역 코로나 정보\n"
+                + "총 사망자 : " + item.getDeathCnt()
+                + "\n확진자 증가 추세 : " + (Integer.parseInt(item.getIncDec()) > 0 ? Math.abs(Integer.parseInt(item.getIncDec())) + "명 증가" : Math.abs(Integer.parseInt(item.getIncDec())) + "명 감소")
+                + "\n격리중 : " + item.getIsolIngCnt()
+                + "\n지역 발생 환자 수 : " + item.getLocalOccCnt();
 
-        //현재온도
-        if ((double) results[1] >= 37) {
-            str += "날씨 최소 대프리카;;";
-        } else if ((double) results[1] <= 5 && (double) results[1] >= -5)
-            str += "날이 추우니 조심하십셔";
-        else if ((double) results[1] < -5)
-            str += "이 나라는 지금 오지게 춥습니다.";
-
-
-        tvWeather.setText(str);
+        tvWeather.setText(weatherName);
+        tvCovidInfo.setText(strCovid);
+        tvMin_MaxTemp.setText(strTemp);
     }
     @Override
     public void onRequestPermissionsResult(int permsRequestCode,
