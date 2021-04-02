@@ -8,8 +8,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivWeather;
     private TextView tvWeather, tvCityName, tvMin_MaxTemp, tvCovidInfo;
     private double latitude, longitude;
-    private LinearLayout mainLayout;
+    private FrameLayout mainLayout;
     private Item item; //내 위치의 코로나 정보가 담김.
     Weather weatherTask;
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ivWeather = findViewById(R.id.ivWeather);
-        tvWeather = findViewById(R.id.tvCovidInfo);
+        tvWeather = findViewById(R.id.tvWeather);
         tvCityName = findViewById(R.id.tvCityName);
         tvCovidInfo = findViewById(R.id.tvCovidInfo);
         tvMin_MaxTemp = findViewById(R.id.tvMin_MaxTemp);
@@ -71,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         gpsTracker = new GpsTracker(MainActivity.this);
 
         if (gpsTracker != null) getLocation();
-        item = covidInfo.getCovidInfo();
+//        item = covidInfo.getCovidInfo();
+        item = new Item();
         getWeather();
 //        Log.d("GYI", String.valueOf(str));
     }
@@ -96,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
                 if (i > 0 && i < 4) results[i] = jsonObject_Temp.getDouble(keywords[i]);
                 if (i >= 4) results[i] = weatherJSONObject.getString(keywords[i]);
             }
+//            if(covidInfo.getCovidInfo() != null)
+//                item = covidInfo.getCovidInfo();
+//            else item = null;
+            item = covidInfo.getCovidInfo();
 
             msgCreator(Integer.parseInt(results[5].toString()), results);
         } catch (Exception e) {
@@ -176,7 +181,8 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
-        tvCityName.setText(results[0].toString());
+//        tvCityName.setText(results[0].toString());
+        tvCityName.setText(covidInfo.getCityName());
         // String str_Weather : 날씨
         // String str_Temp : 온도정보들
         // String str_Covid : 야로나 관련 정보
@@ -190,15 +196,19 @@ public class MainActivity extends AppCompatActivity {
         double tempDiff = Double.parseDouble(String.format("%.1f", (double) results[2] - (double) results[3]));
         //double per = Double.parseDouble(String.format("%.2f",per2));
         strTemp += "\n\n오늘 일교차 : " + tempDiff + "°C";
-
-        strCovid += "" + item.getGubun() + " 지역 코로나 정보\n"
-                + "총 사망자 : " + item.getDeathCnt()
-                + "\n확진자 증가 추세 : " + (Integer.parseInt(item.getIncDec()) > 0 ? Math.abs(Integer.parseInt(item.getIncDec())) + "명 증가" : Math.abs(Integer.parseInt(item.getIncDec())) + "명 감소")
-                + "\n격리중 : " + item.getIsolIngCnt()
-                + "\n지역 발생 환자 수 : " + item.getLocalOccCnt();
-
+        if (item != null) {
+            strCovid += "" + item.getGubun() + " 지역 코로나 정보\n"
+                    + "총 사망자 : " + item.getDeathCnt()
+                    + "\n확진자 증가 추세 : " + (Integer.parseInt(item.getIncDec()) > 0 ? Math.abs(Integer.parseInt(item.getIncDec())) + "명 증가" : Math.abs(Integer.parseInt(item.getIncDec())) + "명 감소")
+                    + "\n격리중 : " + item.getIsolIngCnt()
+                    + "\n지역 발생 환자 수 : " + item.getLocalOccCnt();
+            tvCovidInfo.setText(strCovid);
+        } else {
+//            tvCovidInfo.setText("이 지역에 코로나 현황으로 검색된 결과 없음.");
+            tvCovidInfo.setEnabled(false);
+            Toast.makeText(this, "해당지역에 현재 수신된 코로나 현황이 검색되지 않음.", Toast.LENGTH_SHORT).show();
+        }
         tvWeather.setText(weatherName);
-        tvCovidInfo.setText(strCovid);
         tvMin_MaxTemp.setText(strTemp);
     }
     @Override

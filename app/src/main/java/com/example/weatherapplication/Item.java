@@ -6,8 +6,7 @@ public class Item {
             incDec,
             defCnt,
             isolIngCnt,
-            localOccCnt,
-            url_;
+            localOccCnt;
 
 
     public String getGubun() {

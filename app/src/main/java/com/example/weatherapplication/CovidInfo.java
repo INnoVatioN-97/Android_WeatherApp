@@ -31,16 +31,34 @@ public class CovidInfo {
     private double lon = 0, lat = 0;
     private Geocoder geocoder;
     private String API_KEY;
+    private List<Item> itemList;
 
     public CovidInfo(Context mContext) {
         this.mContext = mContext;
         API_KEY = mContext.getResources().getString(R.string.COVID19_API_KEY);
         geocoder = new Geocoder(mContext);
+        try {
+            itemList = new GetCOVIDAsync(API_KEY).execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setLocation(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
+    }
+
+    public String getCityName() {
+        String cityName = "";
+        try {
+            cityName = geocoder.getFromLocation(lat, lon, 10).get(0).getAddressLine(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cityName;
     }
 
     public String getCity(String cityName) {
@@ -87,76 +105,65 @@ public class CovidInfo {
 
     public Item getCovidInfo() { // {"위치1(도 / 특별(광역)시)", "오늘의 확진자", "어제의 확진자"}
         List<Address> listA = null;
-        Item myItem;
+        Item myItem = null;
         String[] strs = null;
         GetCOVIDAsync getCOVIDAsync = new GetCOVIDAsync(API_KEY);
         try {
             listA = geocoder.getFromLocation(lat, lon, 10);
 //            Log.d("GYI", listA.get(0).getAdminArea());
             String city = getCity(listA.get(0).getAdminArea());
-//            Log.d("GYI", city);
-            List<Item> itemList = getCOVIDAsync.execute().get();
+            Log.d("GYI", city);
+//            List<Item> itemList = getCOVIDAsync.execute().get();
 
-//            Log.d("GYI", "리스트 크기: "+itemList.size());
+            Log.d("GYI", "리스트 크기: " + itemList.size());
             for (Item i : itemList) {
                 if (i.getGubun().equals(city)) {
 //                    Log.d("GYI", i.getGubun() + "찾음");
                     myItem = i;
-                    return myItem;
                 }
             }
+//            for(Item i : itemList)
+//                Log.d("GYI", i.toString());
 //            if(itemList.get(0).getGubun())
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if (myItem != null) {
+            return myItem;
+        } else if (myItem == null) {
+            return null;
         }
         return null;
     }
 }
 
 class GetCOVIDAsync extends AsyncTask<String, String, List<Item>> {
+    private HttpURLConnection conn;
+
     String API_KEY;
 
     public GetCOVIDAsync(String API) {
         API_KEY = API;
     }
 
-    @Override
-    protected List<Item> doInBackground(String... strings) {
-        ArrayList<Item> list = null;
-        Item covid = null;
-        boolean item = false,
-                gubun = false,
-                deathCnt = false,
-                incDec = false,
-                defCnt = false,
-                isolIngCnt = false,
-                localOccCnt = false,
-                url_ = false;
-        //xml 파싱을 시작한다.
-        //xml 파싱은 시작태그, 종료태그, 내용태그를 구분하는 것이 기본이다.
-        //다음 태그로 넘어갈 때 while문을 한번 돌게 된다.
-        //원하는 시작태그가 나오면 그 태그에 맞는 boolean을 true로 해준다.
-        //목표한 태그가 true값을 가지게 되면 내용태그(내용)를 백터에 추가한다.
+    public InputStream getXML() {
+        InputStream input = null;
         try {
             Date currentTime = Calendar.getInstance().getTime();
             String startDate = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(currentTime);
             StringBuilder urlBuilder = new StringBuilder("http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson"); /*URL*/
             urlBuilder.append("?" + URLEncoder.encode("ServiceKey", "UTF-8") + "=" + URLEncoder.encode(API_KEY, "UTF-8")); /*공공데이터포털에서 받은 인증키*/
             urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지번호*/
-            urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")); /*한 페이지 결과 수*/
+            urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("24", "UTF-8")); /*한 페이지 결과 수*/
             urlBuilder.append("&" + URLEncoder.encode("startCreateDt", "UTF-8") + "=" + URLEncoder.encode(startDate, "UTF-8")); /*검색할 생성일 범위의 시작*/
             urlBuilder.append("&" + URLEncoder.encode("endCreateDt", "UTF-8") + "=" + URLEncoder.encode(startDate, "UTF-8")); /*검색할 생성일 범위의 종료*/
             URL url = new URL(urlBuilder.toString());
+            Log.d("GYI", url.toString());
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
 
-            InputStream input;
 
             if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
                 input = conn.getInputStream();
@@ -164,18 +171,40 @@ class GetCOVIDAsync extends AsyncTask<String, String, List<Item>> {
                 input = conn.getErrorStream();
             }
 
-            conn.disconnect();
+//            conn.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return input;
+        }
+    }
+
+    @Override
+    protected List<Item> doInBackground(String... strings) {
+        ArrayList<Item> list = null;
+        Item covid = null;
+        boolean gubun = false,
+                deathCnt = false,
+                incDec = false,
+                defCnt = false,
+                isolIngCnt = false,
+                localOccCnt = false;
+        //xml 파싱을 시작한다.
+        //xml 파싱은 시작태그, 종료태그, 내용태그를 구분하는 것이 기본이다.
+        //다음 태그로 넘어갈 때 while문을 한번 돌게 된다.
+        //원하는 시작태그가 나오면 그 태그에 맞는 boolean을 true로 해준다.
+        //목표한 태그가 true값을 가지게 되면 내용태그(내용)를 백터에 추가한다.
+        try {
 
             XmlPullParserFactory parsers = XmlPullParserFactory.newInstance();
             XmlPullParser parser = parsers.newPullParser();
-            parser.setInput(input, "UTF-8");
+            parser.setInput(getXML(), "UTF-8");
 
-            int type = parser.getEventType();
 //            Log.d("GYI", "파싱을 시작.");
             //데이터 분석 시작, 한번에 한 개의 태그를 분석한다.
             while (parser.getEventType() != XmlPullParser.END_DOCUMENT) {
+                int type = parser.getEventType();
                 //파싱한 데이터의 타입 변수를 저장한다. 시작태그, 텍스트태그, 종료태그를 구분한다.
-
                 //조건에 맞는 데이터가 발견되면 각 데이터에 맞게 대입한다.
                 switch (type) {
 
@@ -184,7 +213,7 @@ class GetCOVIDAsync extends AsyncTask<String, String, List<Item>> {
 
                         break;
                     case XmlPullParser.END_DOCUMENT:
-
+                        Log.d("GYI", "END_DOCUMENT 발생");
                         break;
 
                     case XmlPullParser.END_TAG:
@@ -214,6 +243,7 @@ class GetCOVIDAsync extends AsyncTask<String, String, List<Item>> {
 
 
                     case XmlPullParser.TEXT:
+//                        Log.d("GYI", parser.getText());
                         if (gubun) {
                             covid.setGubun(parser.getText());
                             gubun = false;
@@ -251,6 +281,9 @@ class GetCOVIDAsync extends AsyncTask<String, String, List<Item>> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        for (Item i : list) Log.d("GYI", i.toString());
+
+        conn.disconnect();
         return list;
     }
 }

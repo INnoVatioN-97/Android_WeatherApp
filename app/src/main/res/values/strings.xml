@@ -3,5 +3,5 @@
     <string name="tv_weather">날씨 정보 패널.</string>
     <string name="tv_covidinfo">코로나 관련 정보</string>
     <string name="tv_temp">온도 정보 패널</string>
-    <string name="tv_cityname">고민시</string>
+    <string name="tv_cityname">도시명</string>
 </resources>
